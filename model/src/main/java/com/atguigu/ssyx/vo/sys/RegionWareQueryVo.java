@@ -1,9 +1,11 @@
 package com.atguigu.ssyx.vo.sys;
 
-import lombok.Data;
-import java.util.Date;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
+/**
+ * @author kuanggong
+ */
 @Data
 public class RegionWareQueryVo {
 	

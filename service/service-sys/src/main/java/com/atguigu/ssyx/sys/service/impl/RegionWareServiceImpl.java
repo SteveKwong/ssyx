@@ -1,12 +1,14 @@
 package com.atguigu.ssyx.sys.service.impl;
 
-import com.atguigu.ssyx.common.exception.SsyxException;
-import com.atguigu.ssyx.common.result.ResultCodeEnum;
 import com.atguigu.ssyx.model.sys.RegionWare;
 import com.atguigu.ssyx.sys.mapper.RegionWareMapper;
 import com.atguigu.ssyx.sys.service.IRegionWareService;
+import com.atguigu.ssyx.vo.sys.RegionWareQueryVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,15 +20,28 @@ import org.springframework.stereotype.Service;
  * @since 2023-07-11
  */
 @Service
+@SuppressWarnings({"unchecked,rawtypes"})
 public class RegionWareServiceImpl extends ServiceImpl<RegionWareMapper, RegionWare> implements IRegionWareService {
 
+    /**
+     * 查询对象
+     *
+     * @param pageParam         查询参数
+     * @param regionWareQueryVo 返回对象结果
+     * @return 查询page结果
+     */
     @Override
-    public void saveRegionWare(RegionWare regionWare) {
-        LambdaQueryWrapper<RegionWare> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(RegionWare::getId,regionWare.getId());
-        if (baseMapper.selectCount(wrapper) > 0) {
-            throw new SsyxException(ResultCodeEnum.REPEAT_SUBMIT);
+    public IPage<RegionWare> queryAllRegionWare(Page<RegionWare> pageParam, RegionWareQueryVo regionWareQueryVo) {
+        // 关键字查询
+        String keyword = regionWareQueryVo.getKeyword();
+        LambdaQueryWrapper<RegionWare> wrapper = null;
+        if (StringUtils.isNotEmpty(keyword)) {
+            wrapper = new LambdaQueryWrapper<>();
+            wrapper.like(RegionWare::getRegionName, keyword)
+                    .or()
+                    .like(RegionWare::getWareName, keyword);
         }
-         baseMapper.insert(regionWare);
+        Page<RegionWare> regionWarePage = baseMapper.selectPage(pageParam, wrapper);
+        return regionWarePage;
     }
 }

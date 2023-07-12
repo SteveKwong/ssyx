@@ -6,6 +6,7 @@ import com.atguigu.ssyx.model.acl.Permission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
     /**
      * 查询全部的权限列表
      *
-     * @return
+     * @return 权限列表
      */
     @Override
     public List<Permission> queryAllPermissions() {
@@ -34,7 +35,7 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
         return permissions.stream()
                 .filter(permission -> permission.getPid() == 0)
                 .map((permission) -> {
-                    permission.setChildren(getChilrenList(permission, permissions));
+                    permission.setChildren(getChildrenList(permission, permissions));
                     return permission;
                 }).collect(Collectors.toList());
     }
@@ -46,11 +47,11 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
      * @return 用户所拥有的权限
      */
     @Override
+    @Transactional
     public Optional<Boolean> deletePermissionsById(Long id) {
         try {
-            List<Long> shouldDeleteIds = new ArrayList<>();
             // 查询出应该要删除的ids 通过菜单的id
-            getAllId(id, shouldDeleteIds);
+            List<Long> shouldDeleteIds = getAllId(id);
             if (baseMapper.deleteBatchIds(shouldDeleteIds) > 0) {
                 return Optional.of(Boolean.TRUE);
             } else {
@@ -65,15 +66,29 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
     /**
      * 获取全部的ID   https://www.bilibili.com/video/BV19M4y1q7Lt?t=1120.8&p=25
      * @param id 用户id
-     * @param shouldDeleteIds 要删除的id集合
      */
-    private void getAllId(Long id, List<Long> shouldDeleteIds) {
+    private List<Long> getAllId(Long id) {
+        List<Long> shouldDeleteIds = new ArrayList<>();
+
+        return getLongList(id,shouldDeleteIds);
+    }
+
+    /**
+     * 获取要删除的List集合
+     * @param id id
+     * @param shouldDeleteIds 要删除的集合(空)
+     * @return 要删除的集合
+     */
+    private List<Long> getLongList(Long id,List<Long> shouldDeleteIds) {
         LambdaQueryWrapper<Permission> queryWrapper = new LambdaQueryWrapper<>();
-        List<Long> ids = baseMapper.selectList(queryWrapper).stream()
-                .map(Permission::getId)
-                .collect(Collectors.toList());
-        shouldDeleteIds.add(id);
-        shouldDeleteIds.addAll(ids);
+        queryWrapper.eq(Permission::getPid,id);
+        List<Permission> childList = baseMapper.selectList(queryWrapper);
+        // 递归查询是否有子菜单 有就接着查
+        childList.forEach(item->{
+            shouldDeleteIds.add(item.getId());
+            this.getLongList(item.getId(),shouldDeleteIds);
+        });
+        return shouldDeleteIds;
     }
 
 
@@ -84,12 +99,12 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
      * @param permissionEntities 全部的集合
      * @return 子项集合
      */
-    private List<Permission> getChilrenList(Permission permission, List<Permission> permissionEntities) {
+    private List<Permission> getChildrenList(Permission permission, List<Permission> permissionEntities) {
         List<Permission> childrenList = permissionEntities.stream()
                 .filter(permissionEntity -> permission.getId().equals(permissionEntity.getPid()))
                 .map((permissionEntity) -> {
                     // 通过方法来获取集合中每个子类中的项目
-                    permissionEntity.setChildren(getChilrenList(permissionEntity, permissionEntities));
+                    permissionEntity.setChildren(getChildrenList(permissionEntity, permissionEntities));
                     return permissionEntity;
                 })
                 .collect(Collectors.toList());

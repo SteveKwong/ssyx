@@ -4,8 +4,10 @@ package com.atguigu.ssyx.sys.controller;
 import com.atguigu.ssyx.common.result.Result;
 import com.atguigu.ssyx.model.sys.RegionWare;
 import com.atguigu.ssyx.sys.service.IRegionWareService;
-import io.swagger.annotations.ApiOperation;
-import lombok.RequiredArgsConstructor;
+import com.atguigu.ssyx.vo.sys.RegionWareQueryVo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -17,26 +19,21 @@ import org.springframework.web.bind.annotation.*;
  * @since 2023-07-11
  */
 @RestController
-@RequestMapping("/sys/region-ware")
+@RequestMapping("/1/region-ware")
 @CrossOrigin
-@RequiredArgsConstructor
-public class RegionWareController {
-    /**
-     * 地区
-     */
-    private final IRegionWareService regionWareService;
+public class RegionWareController  {
 
+    @Autowired
+    private IRegionWareService regionWareService;
 
-    /**
-     * 获取登录信息
-     *
-     * @return 用户头像及姓名
-     */
-    @ApiOperation("获取登录信息")
-    @GetMapping("save")
-    public Result insertRegionWare(@RequestBody RegionWare regionWare) {
-        regionWareService.saveRegionWare(regionWare);
-        return Result.ok(null);
+    @GetMapping("/query/allregionware/{limit}/{size}")
+    public Result queryAllRegionWare(@PathVariable("limit") Long pageStare,
+                                     @PathVariable("size") Long pageSize,
+                                     RegionWareQueryVo regionWareQueryVo
+                                     ){
+        Page<RegionWare> pageParam = new Page<>(pageStare, pageSize);
+        IPage<RegionWare> roles = regionWareService.queryAllRegionWare(pageParam, regionWareQueryVo);
+        return Result.ok(roles);
     }
 }
 

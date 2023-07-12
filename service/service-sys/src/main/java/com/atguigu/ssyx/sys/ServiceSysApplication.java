@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author ASUS
  */
 @SpringBootApplication
+//@EnableDiscoveryClient
 public class ServiceSysApplication {
 
     public static void main(String[] args) {

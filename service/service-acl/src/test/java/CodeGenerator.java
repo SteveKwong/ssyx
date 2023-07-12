@@ -40,7 +40,10 @@ public class CodeGenerator {
 
         // 全局配置
         GlobalConfig gc = new GlobalConfig();
-        String projectPath = System.getProperty("F:\\workspace\\guigu-ssyx-parent\\atguigu-ssyx-parent\\service\\service-sys");
+
+        String projectPath = System.getProperty("/Users/kuanggong/workspace/atguigu-ssyx-parent/service/service-sys");
+        gc.setServiceName("%sService");
+        gc.setServiceImplName("%sServiceImpl");
         gc.setOutputDir(projectPath + "/src/main/java");
         gc.setAuthor("qkuang");
         gc.setOpen(false);
@@ -49,7 +52,7 @@ public class CodeGenerator {
 
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
-        dsc.setUrl("jdbc:mysql://localhost:3306/shequ-sys?useUnicode=true&useSSL=false&characterEncoding=utf8");
+        dsc.setUrl("jdbc:mysql://localhost:3307/shequ-sys?useUnicode=true&useSSL=false&characterEncoding=utf8");
         // dsc.setSchemaName("public");
         dsc.setDriverName("com.mysql.cj.jdbc.Driver");
         dsc.setUsername("root");
@@ -58,8 +61,11 @@ public class CodeGenerator {
 
         // 包配置
         PackageConfig pc = new PackageConfig();
-        pc.setModuleName(scanner("com.atguigu.ssyx"));
-        pc.setParent("com.baomidou.ant");
+        pc.setParent("com.atguigu.ssyx");
+        pc.setModuleName("sys");
+        pc.setController("controller");
+        pc.setService("service");
+        pc.setMapper("mapper");
         mpg.setPackageInfo(pc);
 
         // 自定义配置
