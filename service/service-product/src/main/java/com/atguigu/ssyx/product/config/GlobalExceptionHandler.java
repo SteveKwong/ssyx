@@ -1,5 +1,6 @@
-package com.atguigu.ssyx.common.exception;
+package com.atguigu.ssyx.product.config;
 
+import com.atguigu.ssyx.common.exception.SsyxException;
 import com.atguigu.ssyx.common.result.Result;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ControllerAdvice;

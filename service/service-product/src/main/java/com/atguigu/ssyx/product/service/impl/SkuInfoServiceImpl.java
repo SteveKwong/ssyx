@@ -1,7 +1,6 @@
 package com.atguigu.ssyx.product.service.impl;
 
 import com.atguigu.ssyx.common.exception.SsyxException;
-import com.atguigu.ssyx.common.result.ResultCodeEnum;
 import com.atguigu.ssyx.model.product.SkuAttrValue;
 import com.atguigu.ssyx.model.product.SkuImage;
 import com.atguigu.ssyx.model.product.SkuInfo;
@@ -18,7 +17,6 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.UUID;
 
+import static com.atguigu.ssyx.common.result.ResultCodeEnum.NO_PRODUCT;
 import static com.atguigu.ssyx.product.config.RabbitMQConfig.*;
 import static com.atguigu.ssyx.product.enums.GoodsStatus.GOODS_DOWN;
 import static com.atguigu.ssyx.product.enums.GoodsStatus.GOODS_UP;
@@ -63,7 +63,6 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
      */
     private final RabbitTemplate rabbitTemplate;
 
-    private CorrelationData correlationData;
 
     /**
      * 获取商品信息对象
@@ -216,26 +215,16 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         // 商品的上架中直接商品状态改成上架,然后同步到索引库当中
         // 在这个方法中,需要先发送MQ到索引库服务 如果回调为真 则修改数据库状态为上架
         // 3.添加callback
-        correlationData.getFuture().addCallback(
-                result -> {
-                    Assert.notNull(result);
-                    if (result.isAck()) {
-                        // 3.1.ack，消息成功
-                        log.debug("消息发送成功, ID:{}", correlationData.getId());
-                        // TODO 如何进行等待ACK的回执
-                        LambdaUpdateWrapper<SkuInfo> updateWrapper = new LambdaUpdateWrapper<>();
-                        updateWrapper.eq(SkuInfo::getId, id);
-                        updateWrapper.set(SkuInfo::getPublishStatus, GOODS_UP);
-                        baseMapper.update(null, updateWrapper);
-                    } else {
-                        // 3.2.nack，消息失败
-                        log.error("消息发送失败, ID:{}, 原因{}", correlationData.getId(), result.getReason());
-                        throw new SsyxException(ResultCodeEnum.FAIL);
-                    }
-                },
-                ex -> log.error("消息发送异常, ID:{}, 原因{}", correlationData.getId(), ex.getMessage())
-        );
-        rabbitTemplate.convertAndSend(GOODS_UP_EXCHANGE, AD_UPDATE_QUEUE, id, correlationData);
+        SkuInfo skuInfo = baseMapper.selectById(id);
+        if (skuInfo == null|| GOODS_UP.getCode().equals(skuInfo.getPublishStatus())) {
+            log.error(NO_PRODUCT.getMessage()+":"+id);
+            throw new SsyxException(NO_PRODUCT);
+        }
+        rabbitTemplate.convertAndSend(GOODS_UP_EXCHANGE, SEARCH_ADD_QUEUE, id, new CorrelationData(UUID.randomUUID().toString()));
+        LambdaUpdateWrapper<SkuInfo> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(SkuInfo::getId, id);
+        wrapper.set(SkuInfo::getPublishStatus,GOODS_UP.getCode());
+        baseMapper.update(null, wrapper);
     }
 
     /**
@@ -248,25 +237,11 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         // 商品的上架中直接商品状态改成上架,然后同步到索引库当中
         // 在这个方法中,需要先发送MQ到索引库服务 如果回调为真 则修改数据库状态为上架
         // 3.添加callback
-        correlationData.getFuture().addCallback(
-                result -> {
-                    Assert.notNull(result);
-                    if (result.isAck()) {
-                        // 3.1.ack，消息成功
-                        log.debug("消息发送成功, ID:{}", correlationData.getId());
-                        // TODO 如何进行等待ACK的回执
-                        LambdaUpdateWrapper<SkuInfo> updateWrapper = new LambdaUpdateWrapper<>();
-                        updateWrapper.eq(SkuInfo::getId, id);
-                        updateWrapper.set(SkuInfo::getPublishStatus, GOODS_DOWN);
-                        this.baseMapper.update(null, updateWrapper);
-                    } else {
-                        // 3.2.nack，消息失败
-                        log.error("消息发送失败, ID:{}, 原因{}", correlationData.getId(), result.getReason());
-                        throw new SsyxException(ResultCodeEnum.FAIL);
-                    }
-                },
-                ex -> log.error("消息发送异常, ID:{}, 原因{}", correlationData.getId(), ex.getMessage())
-        );
-        rabbitTemplate.convertAndSend(GOODS_DOWN_EXCHANGE, AD_UPDATE_QUEUE, id, correlationData);
+        CorrelationData correlationData = new CorrelationData(UUID.randomUUID().toString());
+        rabbitTemplate.convertAndSend(GOODS_DOWN_EXCHANGE, SEARCH_DEL_QUEUE, id, correlationData);
+        LambdaUpdateWrapper<SkuInfo> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(SkuInfo::getId, id);
+        updateWrapper.set(SkuInfo::getPublishStatus, GOODS_DOWN);
+        this.baseMapper.update(null, updateWrapper);
     }
 }

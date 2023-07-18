@@ -16,6 +16,7 @@ public enum ResultCodeEnum {
     DATA_ERROR(204, "数据异常"),
     ILLEGAL_REQUEST(205, "非法请求"),
     REPEAT_SUBMIT(206, "重复提交"),
+    NO_PRODUCT(207, "没有这个商品或者商品已经上架"),
 
     LOGIN_AUTH(208, "未登陆"),
     PERMISSION(209, "没有权限"),
