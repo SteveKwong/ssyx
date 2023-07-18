@@ -7,6 +7,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+/**
+ * @author kuanggong
+ */
 @Data
 @ApiModel(description = "SkuAttrValue")
 @TableName("sku_attr_value")
