@@ -41,7 +41,6 @@ public class RegionWareServiceImpl extends ServiceImpl<RegionWareMapper, RegionW
                     .or()
                     .like(RegionWare::getWareName, keyword);
         }
-        Page<RegionWare> regionWarePage = baseMapper.selectPage(pageParam, wrapper);
-        return regionWarePage;
+        return baseMapper.selectPage(pageParam, wrapper);
     }
 }

@@ -9,6 +9,9 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+/**
+ * @author kuanggong
+ */
 @Data
 @ApiModel(description = "SkuInfo")
 @TableName("sku_info")
