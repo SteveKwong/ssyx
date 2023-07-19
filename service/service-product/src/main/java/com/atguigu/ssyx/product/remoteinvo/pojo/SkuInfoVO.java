@@ -1,4 +1,4 @@
-package com.atguigu.ssyx.search.vo;
+package com.atguigu.ssyx.product.remoteinvo.pojo;
 
 import lombok.Data;
 

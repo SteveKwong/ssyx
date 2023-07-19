@@ -1,5 +1,6 @@
 package com.atguigu.ssyx.search.service.impl;
 
+import com.atguigu.ssyx.common.result.Result;
 import com.atguigu.ssyx.search.config.ElasticSearchConfig;
 import com.atguigu.ssyx.search.remoteinvo.ProductService;
 import com.atguigu.ssyx.search.vo.SkuInfoVO;
@@ -75,7 +76,8 @@ public class ProductDealServiceImpl {
             // TODO 商品上架
             //  FEIGN 远程获取商品信息
             if (!spuId.isEmpty()) {
-                List<SkuInfoVO> skuInfos = productService.findSkuListBySpuId(spuId);
+                Result<List<SkuInfoVO>> skuListBySpuId = productService.findSkuListBySpuId(spuId);
+                List<SkuInfoVO> skuInfos = skuListBySpuId.getData();
                 // 使用es进行商品的上架
                 boolean upResult = productStatusUp(skuInfos);
                 // 如果商品上架失败,则重新投递到队列进行上架排序

@@ -1,11 +1,14 @@
 package com.atguigu.ssyx.product.service;
 
 import com.atguigu.ssyx.model.product.SkuInfo;
+import com.atguigu.ssyx.product.remoteinvo.pojo.SkuInfoVO;
 import com.atguigu.ssyx.vo.product.SkuInfoQueryVo;
 import com.atguigu.ssyx.vo.product.SkuInfoVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -42,33 +45,45 @@ public interface SkuInfoService extends IService<SkuInfo> {
 
     /**
      * 修改上架下架的状态
-     * @param id skuInfo的id
+     *
+     * @param id     skuInfo的id
      * @param status
      */
     void changePublishStatus(Long id, Long publishStatus);
 
     /**
      * 修改审核状态
-     * @param id skuInfo的id
+     *
+     * @param id          skuInfo的id
      * @param checkStatus 审核状态
      */
     void changeCheckStatus(Long id, Long checkStatus);
 
     /**
-     *
-     * @param id　skuInfo的id
+     * @param id          　skuInfo的id
      * @param isNewPerson 是否能够使用新人优惠
      */
     void changeNewPersonStatus(Long id, Long isNewPerson);
 
     /**
      * 商品上架索引库
+     *
      * @param id 商品的id
      */
     void goodsUp(Long id);
+
     /**
      * 商品下架索引库
+     *
      * @param id 商品的id
      */
     void goodsDown(Long id);
+
+    /**
+     * 获取sku信息集合
+     *
+     * @param id 商品的spuId
+     * @return 商品的信息集合
+     */
+    List<SkuInfoVO> getSkus(Long id);
 }

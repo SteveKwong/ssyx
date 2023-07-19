@@ -6,6 +6,7 @@ import com.atguigu.ssyx.model.product.SkuImage;
 import com.atguigu.ssyx.model.product.SkuInfo;
 import com.atguigu.ssyx.model.product.SkuPoster;
 import com.atguigu.ssyx.product.mapper.SkuInfoMapper;
+import com.atguigu.ssyx.product.remoteinvo.pojo.SkuInfoVO;
 import com.atguigu.ssyx.product.service.SkuAttrValueService;
 import com.atguigu.ssyx.product.service.SkuImageService;
 import com.atguigu.ssyx.product.service.SkuInfoService;
@@ -216,14 +217,14 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         // 在这个方法中,需要先发送MQ到索引库服务 如果回调为真 则修改数据库状态为上架
         // 3.添加callback
         SkuInfo skuInfo = baseMapper.selectById(id);
-        if (skuInfo == null|| GOODS_UP.getCode().equals(skuInfo.getPublishStatus())) {
-            log.error(NO_PRODUCT.getMessage()+":"+id);
+        if (skuInfo == null || GOODS_UP.getCode().equals(skuInfo.getPublishStatus())) {
+            log.error(NO_PRODUCT.getMessage() + ":" + id);
             throw new SsyxException(NO_PRODUCT);
         }
         rabbitTemplate.convertAndSend(GOODS_UP_EXCHANGE, SEARCH_ADD_QUEUE, id, new CorrelationData(UUID.randomUUID().toString()));
         LambdaUpdateWrapper<SkuInfo> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(SkuInfo::getId, id);
-        wrapper.set(SkuInfo::getPublishStatus,GOODS_UP.getCode());
+        wrapper.set(SkuInfo::getPublishStatus, GOODS_UP.getCode());
         baseMapper.update(null, wrapper);
     }
 
@@ -243,5 +244,17 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         updateWrapper.eq(SkuInfo::getId, id);
         updateWrapper.set(SkuInfo::getPublishStatus, GOODS_DOWN);
         this.baseMapper.update(null, updateWrapper);
+    }
+
+    /**
+     * 获取商品的信息集合
+     *
+     * @param id 商品的spuId
+     * @return 商品的信息集合
+     */
+    @Override
+    public List<SkuInfoVO> getSkus(Long id) {
+
+        return null;
     }
 }
