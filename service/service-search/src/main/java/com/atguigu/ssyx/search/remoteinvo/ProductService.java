@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import java.util.List;
-
 
 /**
  * @author kuanggong
@@ -23,6 +21,6 @@ public interface ProductService {
      * @param spuId spu的Id
      * @return sku的信息集合
      */
-    @GetMapping(value = "/sys/sku-info/getskus/{spuid}")
-    public Result<List<SkuInfoVO>> findSkuListBySpuId(@PathVariable("spuid") String spuId);
+    @GetMapping(value = "/sys/sku-info/getskuinfo/{spuid}")
+    Result<SkuInfoVO> findSkuListBySpuId(@PathVariable("spuid") String spuId);
 }

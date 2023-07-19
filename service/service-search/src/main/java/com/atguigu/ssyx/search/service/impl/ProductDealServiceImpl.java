@@ -1,17 +1,20 @@
 package com.atguigu.ssyx.search.service.impl;
 
 import com.atguigu.ssyx.common.result.Result;
-import com.atguigu.ssyx.search.config.ElasticSearchConfig;
 import com.atguigu.ssyx.search.remoteinvo.ProductService;
 import com.atguigu.ssyx.search.vo.SkuInfoVO;
 import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
+import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.bulk.BulkItemResponse;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.IndicesClient;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.Exchange;
@@ -21,12 +24,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.atguigu.ssyx.search.config.RabbitMQConfig.*;
 
@@ -73,14 +72,13 @@ public class ProductDealServiceImpl {
     ))
     public void importDataBySpuId(String spuId, Message message, Channel channel) throws Exception {
         try {
-            // TODO 商品上架
-            //  FEIGN 远程获取商品信息
             if (!spuId.isEmpty()) {
-                Result<List<SkuInfoVO>> skuListBySpuId = productService.findSkuListBySpuId(spuId);
-                List<SkuInfoVO> skuInfos = skuListBySpuId.getData();
+                Result<SkuInfoVO> skuListBySpuId = productService.findSkuListBySpuId(spuId);
+                SkuInfoVO skuInfo = skuListBySpuId.getData();
+                Assert.notNull(skuInfo,"未查询到skuInfo相关的信息");
                 // 使用es进行商品的上架
-                boolean upResult = productStatusUp(skuInfos);
-                // 如果商品上架失败,则重新投递到队列进行上架排序
+                boolean upResult = productStatusUp(skuInfo);
+                // 如果商品上架失败,则重新投递到队列队尾进行上架排序
                 if (!upResult) {
                     channel.basicNack(message.getMessageProperties().getDeliveryTag(), Boolean.FALSE, Boolean.TRUE);
                 }
@@ -94,27 +92,61 @@ public class ProductDealServiceImpl {
     /**
      * 进行商品的上架
      *
-     * @param skuInfos 单个商品的sku的信息集合
+     * @param infoVO 单个商品的sku的信息集合
      */
-    private boolean productStatusUp(List<SkuInfoVO> skuInfos) throws IOException {
-        if (CollectionUtils.isEmpty(skuInfos)) {
+    private boolean productStatusUp(SkuInfoVO infoVO) throws Exception {
+        if (infoVO == null) {
             return true;
         }
         //创建批量请求
-        BulkRequest bulkRequest = new BulkRequest();
-
-        for (SkuInfoVO esModel : skuInfos) {
-            IndexRequest indexRequest = new IndexRequest(PRODUCT_INDEX);
-            indexRequest.id(esModel.getSkuId());
-            indexRequest.source(gson.toJson(skuInfos), XContentType.JSON);
-            bulkRequest.add(indexRequest);
+        boolean exists = indexExists(PRODUCT_INDEX);
+        IndexRequest indexRequest;
+        IndexResponse indexResponse;
+        // 不存在则重新创建一个索引库,索引库的数据为传入的sku的信息json
+        if (!exists) {
+            // 设置索引名称
+            indexRequest = new IndexRequest(PRODUCT_INDEX);
+            // 设置文档ID
+            indexRequest.id(infoVO.getSkuId());
+            // 设置文档内容
+            indexRequest.source(buildJSONFromEntity(infoVO), XContentType.JSON);
+            indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
+            if (indexResponse.status().getStatus() == 1) {
+                // 插入
+                insertIntoIndex(infoVO);
+            }
+        } else {
+            insertIntoIndex(infoVO);
         }
-        BulkResponse bulk = client.bulk(bulkRequest, ElasticSearchConfig.COMMON_OPTIONS);
-        //  存入ES返回是否存在失败信息
-        boolean hasFailures = bulk.hasFailures();
-        List<String> collect = Arrays.stream(bulk.getItems()).map(BulkItemResponse::getId).collect(Collectors.toList());
-        log.info("商品上架完成:{}", collect);
-        return hasFailures;
+        return false;
+    }
+
+    /**
+     * 插入到索引库
+     *
+     * @param infoVO 信息
+     * @throws IOException 异常
+     */
+    private void insertIntoIndex(SkuInfoVO infoVO) throws IOException {
+        IndexRequest indexRequest;
+        IndexResponse indexResponse;
+        indexRequest = new IndexRequest(PRODUCT_INDEX);
+        indexRequest.id(infoVO.getSkuId());
+        indexRequest.source(gson.toJson(infoVO), XContentType.JSON);
+        indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
+        System.out.println("Index created with status: " + indexResponse.status());
+    }
+
+    /**
+     * 判断索引库是否存在
+     */
+    public boolean indexExists(String indexName) throws Exception {
+        IndicesClient indicesClient = client.indices();
+        // 创建get请求
+        GetIndexRequest request = new GetIndexRequest(indexName);
+        // 判断索引库是否存在
+        boolean exists = indicesClient.exists(request, RequestOptions.DEFAULT);
+        return exists;
     }
 
 
@@ -133,4 +165,27 @@ public class ProductDealServiceImpl {
     public void delDataBySpuId(Message message, Channel channel) throws Exception {
 
     }
+
+    /**
+     * 创建索引库字段实体
+     * @param skuInfoVO s
+     * @return s
+     * @throws IOException y
+     */
+    private XContentBuilder buildJSONFromEntity(SkuInfoVO skuInfoVO) throws IOException {
+        XContentBuilder builder = XContentFactory.jsonBuilder();
+        builder.startObject();
+        // 设置字段名和对应的值
+        builder.field("sku_id", skuInfoVO.getSkuId());
+        builder.field("sku_name", skuInfoVO.getSkuName());
+        builder.field("price", skuInfoVO.getPrice());
+        builder.field("market_price", skuInfoVO.getMarketPrice());
+        builder.field("stock", skuInfoVO.getStock());
+        builder.field("sku_image", skuInfoVO.getSkuImage());
+        builder.field("sales", skuInfoVO.getSales());
+        builder.field("skuPosters", skuInfoVO.getSkuPosters());
+        builder.endObject();
+        return builder;
+    }
+
 }

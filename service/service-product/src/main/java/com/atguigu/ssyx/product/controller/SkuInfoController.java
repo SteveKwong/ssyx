@@ -13,8 +13,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * <p>
  * sku信息 前端控制器
@@ -138,10 +136,10 @@ public class SkuInfoController {
      * @return 属性列表
      */
     @ApiOperation("获取sku的集合信息")
-    @GetMapping("getskus/{id}")
-    public Result<List<SkuInfoVO>> getSkus(@PathVariable("id") Long id) {
-        List<SkuInfoVO> skuInfoList = skuInfoService.getSkus(id);
-        return Result.ok(skuInfoList);
+    @GetMapping("getskuinfo/{spuid}")
+    public Result<SkuInfoVO> getSkuInfo(@PathVariable("spuid") Long id) {
+        SkuInfoVO skuInfoVO = skuInfoService.getSkuInfo(id);
+        return Result.ok(skuInfoVO);
     }
 }
 

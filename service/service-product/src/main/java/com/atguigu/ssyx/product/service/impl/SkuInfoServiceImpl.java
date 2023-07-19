@@ -1,10 +1,10 @@
 package com.atguigu.ssyx.product.service.impl;
 
-import com.atguigu.ssyx.common.exception.SsyxException;
 import com.atguigu.ssyx.model.product.SkuAttrValue;
 import com.atguigu.ssyx.model.product.SkuImage;
 import com.atguigu.ssyx.model.product.SkuInfo;
 import com.atguigu.ssyx.model.product.SkuPoster;
+import com.atguigu.ssyx.product.converter.MyMapper;
 import com.atguigu.ssyx.product.mapper.SkuInfoMapper;
 import com.atguigu.ssyx.product.remoteinvo.pojo.SkuInfoVO;
 import com.atguigu.ssyx.product.service.SkuAttrValueService;
@@ -18,6 +18,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -25,12 +26,13 @@ import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import static com.atguigu.ssyx.common.result.ResultCodeEnum.NO_PRODUCT;
 import static com.atguigu.ssyx.product.config.RabbitMQConfig.*;
 import static com.atguigu.ssyx.product.enums.GoodsStatus.GOODS_DOWN;
 import static com.atguigu.ssyx.product.enums.GoodsStatus.GOODS_UP;
@@ -212,16 +214,16 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
      * @param id 商品的id
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void goodsUp(Long id) {
-        // 商品的上架中直接商品状态改成上架,然后同步到索引库当中
-        // 在这个方法中,需要先发送MQ到索引库服务 如果回调为真 则修改数据库状态为上架
-        // 3.添加callback
+        // 判断是否已上架
         SkuInfo skuInfo = baseMapper.selectById(id);
-        if (skuInfo == null || GOODS_UP.getCode().equals(skuInfo.getPublishStatus())) {
-            log.error(NO_PRODUCT.getMessage() + ":" + id);
-            throw new SsyxException(NO_PRODUCT);
-        }
-        rabbitTemplate.convertAndSend(GOODS_UP_EXCHANGE, SEARCH_ADD_QUEUE, id, new CorrelationData(UUID.randomUUID().toString()));
+        Assert.notNull(skuInfo,"没有找到该商品");
+        Assert.isTrue(!GOODS_UP.getCode().equals(skuInfo.getPublishStatus()),"商品已经上架");
+        // 发送到索引库处理逻辑
+        rabbitTemplate.convertAndSend(GOODS_UP_EXCHANGE, SEARCH_ADD_QUEUE, id,
+                new CorrelationData(UUID.randomUUID().toString()));
+        // 修改数据库状态为上架
         LambdaUpdateWrapper<SkuInfo> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(SkuInfo::getId, id);
         wrapper.set(SkuInfo::getPublishStatus, GOODS_UP.getCode());
@@ -233,6 +235,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
      *
      * @param id 商品的id
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void goodsDown(Long id) {
         // 商品的上架中直接商品状态改成上架,然后同步到索引库当中
@@ -247,14 +250,43 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
     }
 
     /**
-     * 获取商品的信息集合
+     * 获取商品的信息
      *
-     * @param id 商品的spuId
-     * @return 商品的信息集合
+     * @param id skuId
+     * @return sku的info信息
      */
     @Override
-    public List<SkuInfoVO> getSkus(Long id) {
+    public SkuInfoVO getSkuInfo(Long id) {
+        SkuInfo skuInfo = baseMapper.selectById(id);
+        SkuInfoVO skuInfoVO = MyMapper.INSTANCE.converterSkuInfoToSkuInfoVO(skuInfo);
+        // 根据sku的ID 获取他的其他属性
+        SkuInfoVo skuInfoVo = getSkuInfoVo(id);
+        addPosterPhotoInformation(skuInfoVO, skuInfoVo);
+        return skuInfoVO;
+    }
 
-        return null;
+    /**
+     * 处理skuinfo的信息
+     *
+     * @param skuInfoVO 展示VO
+     * @param skuInfoVo 查询的Vo
+     */
+    private void addPosterPhotoInformation(SkuInfoVO skuInfoVO, SkuInfoVo skuInfoVo) {
+        // 海报 照片 属性信息
+        List<SkuAttrValue> skuAttrValueList = skuInfoVo.getSkuAttrValueList();
+        List<SkuImage> skuImagesList = skuInfoVo.getSkuImagesList();
+        List<SkuPoster> skuPosterList = skuInfoVo.getSkuPosterList();
+        // 海报地址
+        skuInfoVO.setSkuPosters(skuPosterList.stream().map(SkuPoster::getImgUrl).collect(Collectors.toList()));
+        // 照片信息
+        skuInfoVO.setSkuImages(skuImagesList.stream().map(SkuImage::getImgUrl).collect(Collectors.toList()));
+        // 属性信息
+        List<SkuInfoVO.Attrs> attrList = skuAttrValueList.stream().map(skuAttrValue -> {
+            SkuInfoVO.Attrs attrs = new SkuInfoVO.Attrs();
+            attrs.setAttrName(skuAttrValue.getAttrName());
+            attrs.setAttrValue(skuAttrValue.getAttrValue());
+            return attrs;
+        }).collect(Collectors.toList());
+        skuInfoVO.setAttrs(attrList);
     }
 }

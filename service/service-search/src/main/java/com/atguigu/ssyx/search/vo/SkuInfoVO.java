@@ -37,7 +37,7 @@ public class SkuInfoVO implements Serializable {
     /**
      * sku的图片地址
      */
-    private String  skuImage;
+    private String skuImage;
     /**
      * sku的海报集合
      */
@@ -45,7 +45,7 @@ public class SkuInfoVO implements Serializable {
     /**
      * 售卖量
      */
-    private String  sales;
+    private String sales;
 
 
 }
