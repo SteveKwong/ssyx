@@ -3,6 +3,7 @@ package com.atguigu.ssyx.product.controller;
 
 import com.atguigu.ssyx.common.result.Result;
 import com.atguigu.ssyx.model.product.SkuInfo;
+import com.atguigu.ssyx.product.remoteinvo.pojo.SkuInfoVO;
 import com.atguigu.ssyx.product.service.SkuInfoService;
 import com.atguigu.ssyx.vo.product.SkuInfoQueryVo;
 import com.atguigu.ssyx.vo.product.SkuInfoVo;
@@ -116,6 +117,7 @@ public class SkuInfoController {
         skuInfoService.goodsUp(id);
         return Result.ok("商品上架成功");
     }
+
     /**
      * 商品下架
      *
@@ -126,6 +128,18 @@ public class SkuInfoController {
     public Result<String> goodsDown(@PathVariable("id") Long id) {
         skuInfoService.goodsDown(id);
         return Result.ok("商品下架成功");
+    }
+
+    /**
+     * 获取sku的集合信息
+     *
+     * @return 属性列表
+     */
+    @ApiOperation("获取sku的集合信息")
+    @GetMapping("getskuinfo/{spuid}")
+    public Result<SkuInfoVO> getSkuInfo(@PathVariable("spuid") Long id) {
+        SkuInfoVO skuInfoVO = skuInfoService.getSkuInfo(id);
+        return Result.ok(skuInfoVO);
     }
 }
 

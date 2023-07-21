@@ -1,4 +1,4 @@
-package com.atguigu.ssyx.search.vo;
+package com.atguigu.ssyx.product.remoteinvo.pojo;
 
 import lombok.Data;
 
@@ -37,7 +37,7 @@ public class SkuInfoVO implements Serializable {
     /**
      * sku的图片地址
      */
-    private String skuImage;
+    private List<String> skuImages;
     /**
      * sku的海报集合
      */
@@ -46,6 +46,28 @@ public class SkuInfoVO implements Serializable {
      * 售卖量
      */
     private String sales;
+
+    /**
+     * 属性信息
+     */
+    private List<Attrs> attrs;
+
+    /**
+     * sku的属性信息
+     */
+    @Data
+    public static class Attrs {
+
+        /**
+         * 属性名
+         */
+        private String attrName;
+
+        /**
+         * 属性值
+         */
+        private String attrValue;
+    }
 
 
 }
