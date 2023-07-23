@@ -1,6 +1,5 @@
 package com.atguigu.ssyx.search.service.impl;
 
-import com.atguigu.ssyx.common.result.Result;
 import com.atguigu.ssyx.search.remoteinvo.ProductService;
 import com.atguigu.ssyx.search.vo.SkuInfoVO;
 import com.google.gson.Gson;
@@ -73,10 +72,9 @@ public class ProductDealServiceImpl {
     public void importDataBySpuId(String spuId, Message message, Channel channel) throws Exception {
         try {
             if (!spuId.isEmpty()) {
-                Result<SkuInfoVO> skuListBySpuId = productService.findSkuListBySpuId(spuId);
-                SkuInfoVO skuInfo = skuListBySpuId.getData();
-                Assert.notNull(skuInfo,"未查询到skuInfo相关的信息");
-                // 使用es进行商品的上架
+                SkuInfoVO skuInfo = productService.findSkuListBySpuId(spuId).getData();
+                Assert.notNull(skuInfo, "未查询到skuInfo相关的信息");
+                //TODO  使用es进行商品的上架 如果为false,则重新投递,这个程序存在错误,如果一直失败,那么就会一直触发上架逻辑
                 boolean upResult = productStatusUp(skuInfo);
                 // 如果商品上架失败,则重新投递到队列队尾进行上架排序
                 if (!upResult) {
@@ -85,6 +83,7 @@ public class ProductDealServiceImpl {
             }
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), Boolean.FALSE);
         } catch (IOException e) {
+            // 消息抛弃
             channel.basicNack(message.getMessageProperties().getDeliveryTag(), Boolean.FALSE, Boolean.FALSE);
         }
     }
@@ -95,22 +94,19 @@ public class ProductDealServiceImpl {
      * @param infoVO 单个商品的sku的信息集合
      */
     private boolean productStatusUp(SkuInfoVO infoVO) throws Exception {
-        if (infoVO == null) {
-            return true;
-        }
         //创建批量请求
         boolean exists = indexExists(PRODUCT_INDEX);
-        IndexRequest indexRequest;
-        IndexResponse indexResponse;
+
         // 不存在则重新创建一个索引库,索引库的数据为传入的sku的信息json
         if (!exists) {
             // 设置索引名称
-            indexRequest = new IndexRequest(PRODUCT_INDEX);
+            IndexRequest indexRequest = new IndexRequest(PRODUCT_INDEX);
             // 设置文档ID
             indexRequest.id(infoVO.getSkuId());
             // 设置文档内容
             indexRequest.source(buildJSONFromEntity(infoVO), XContentType.JSON);
-            indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
+            IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
+            // 远程调用查询状态为已经上架
             if (indexResponse.status().getStatus() == 1) {
                 // 插入
                 insertIntoIndex(infoVO);
@@ -118,7 +114,7 @@ public class ProductDealServiceImpl {
         } else {
             insertIntoIndex(infoVO);
         }
-        return false;
+        return true;
     }
 
     /**
@@ -128,12 +124,10 @@ public class ProductDealServiceImpl {
      * @throws IOException 异常
      */
     private void insertIntoIndex(SkuInfoVO infoVO) throws IOException {
-        IndexRequest indexRequest;
-        IndexResponse indexResponse;
-        indexRequest = new IndexRequest(PRODUCT_INDEX);
+        IndexRequest indexRequest = new IndexRequest(PRODUCT_INDEX);
         indexRequest.id(infoVO.getSkuId());
         indexRequest.source(gson.toJson(infoVO), XContentType.JSON);
-        indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
+        IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
         System.out.println("Index created with status: " + indexResponse.status());
     }
 
@@ -168,6 +162,7 @@ public class ProductDealServiceImpl {
 
     /**
      * 创建索引库字段实体
+     *
      * @param skuInfoVO s
      * @return s
      * @throws IOException y

@@ -27,5 +27,13 @@
             <version>1.5.3.Final</version>
             <scope>provided</scope>
         </dependency>
+<!--        解决bug ：java: Unknown property "skuId" in result type SkuInfoVO. Did you mean "null"?的依赖-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok-mapstruct-binding</artifactId>
+            <version>0.2.0</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 </project>

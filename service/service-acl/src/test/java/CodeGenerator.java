@@ -41,7 +41,7 @@ public class CodeGenerator {
         // 全局配置
         GlobalConfig gc = new GlobalConfig();
 
-        String projectPath = System.getProperty("/Users/kuanggong/workspace/atguigu-ssyx-parent/service/service-product");
+        String projectPath = System.getProperty("/Users/kuanggong/workspace/atguigu-ssyx-parent/service/service-activity");
         gc.setServiceName("%sService");
         gc.setServiceImplName("%sServiceImpl");
         gc.setOutputDir(projectPath + "/src/main/java");
@@ -52,7 +52,7 @@ public class CodeGenerator {
 
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
-        dsc.setUrl("jdbc:mysql://localhost:3307/shequ-product?useUnicode=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=utf8");
+        dsc.setUrl("jdbc:mysql://localhost:3306/shequ-activity?useUnicode=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=utf8");
         // dsc.setSchemaName("public");
         dsc.setDriverName("com.mysql.cj.jdbc.Driver");
         dsc.setUsername("root");

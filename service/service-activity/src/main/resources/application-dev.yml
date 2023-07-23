@@ -1,5 +1,5 @@
 #server:
-#  port: 8213
+#  port: 8217
 #
 #mybatis-plus:
 #  configuration:
@@ -9,7 +9,7 @@
 #  datasource:
 #    type: com.zaxxer.hikari.HikariDataSource
 #    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://localhost:3307/shequ-product?characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+#    url: jdbc:mysql://localhost:3307/shequ-activity?characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
 #    username: root
 #    password: root
 #  redis:

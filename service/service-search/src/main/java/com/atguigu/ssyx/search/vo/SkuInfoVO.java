@@ -47,5 +47,4 @@ public class SkuInfoVO implements Serializable {
      */
     private String sales;
 
-
 }
