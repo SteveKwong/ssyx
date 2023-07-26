@@ -1,5 +1,6 @@
 package com.atguigu.ssyx.user.service;
 
+import com.atguigu.ssyx.enums.user.LeaderUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
