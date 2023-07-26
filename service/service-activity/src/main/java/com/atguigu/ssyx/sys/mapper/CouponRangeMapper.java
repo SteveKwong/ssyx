@@ -1,6 +1,6 @@
 package com.atguigu.ssyx.sys.mapper;
 
-import com.atguigu.ssyx.sys.entity.CouponRange;
+import com.atguigu.ssyx.model.activity.CouponRange;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 

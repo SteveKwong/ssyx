@@ -1,6 +1,6 @@
 package com.atguigu.ssyx.sys.service;
 
-import com.atguigu.ssyx.sys.entity.ActivitySku;
+import com.atguigu.ssyx.model.activity.ActivitySku;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

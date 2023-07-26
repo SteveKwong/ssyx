@@ -1,6 +1,5 @@
 package com.atguigu.ssyx.model.activity;
 
-import com.atguigu.ssyx.enums.ActivityType;
 import com.atguigu.ssyx.model.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -30,8 +29,8 @@ public class ActivityInfo extends BaseEntity {
 	private String activityName;
 
 	@ApiModelProperty(value = "活动类型（满减、折扣）")
-	@TableField("activity_type")
-	private ActivityType activityType;
+	@TableField(value = "activity_type")
+	private String activityType;
 
 	@ApiModelProperty(value = "活动描述")
 	@TableField("activity_desc")

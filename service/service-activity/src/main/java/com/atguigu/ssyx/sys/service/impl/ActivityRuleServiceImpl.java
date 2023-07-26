@@ -1,6 +1,6 @@
 package com.atguigu.ssyx.sys.service.impl;
 
-import com.atguigu.ssyx.sys.entity.ActivityRule;
+import com.atguigu.ssyx.model.activity.ActivityRule;
 import com.atguigu.ssyx.sys.mapper.ActivityRuleMapper;
 import com.atguigu.ssyx.sys.service.ActivityRuleService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

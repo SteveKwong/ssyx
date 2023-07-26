@@ -3,6 +3,10 @@ package com.atguigu.ssyx.enums;
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.Getter;
 
+/**
+ * @author kuanggong
+ */
+
 @Getter
 public enum ActivityType {
     FULL_REDUCTION(1,"满减"),

@@ -1,6 +1,6 @@
 package com.atguigu.ssyx.sys.service;
 
-import com.atguigu.ssyx.sys.entity.CouponInfo;
+import com.atguigu.ssyx.model.activity.CouponInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

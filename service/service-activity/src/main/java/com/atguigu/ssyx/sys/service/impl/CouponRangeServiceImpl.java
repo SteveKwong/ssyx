@@ -1,6 +1,6 @@
 package com.atguigu.ssyx.sys.service.impl;
 
-import com.atguigu.ssyx.sys.entity.CouponRange;
+import com.atguigu.ssyx.model.activity.CouponRange;
 import com.atguigu.ssyx.sys.mapper.CouponRangeMapper;
 import com.atguigu.ssyx.sys.service.CouponRangeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
