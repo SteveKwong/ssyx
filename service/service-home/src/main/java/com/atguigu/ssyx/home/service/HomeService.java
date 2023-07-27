@@ -1,6 +1,6 @@
 package com.atguigu.ssyx.home.service;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author kuanggong
@@ -12,5 +12,5 @@ public interface HomeService {
      * 展示主页数据
      * @return 查询到的结果以map的形式进行封装
      */
-    HashMap<String, Object> showHome();
+    Map<Object, Object> showHome();
 }

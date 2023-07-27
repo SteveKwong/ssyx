@@ -3,8 +3,6 @@ package com.atguigu.ssyx.user.converter;
 import com.atguigu.ssyx.enums.user.Leader;
 import com.atguigu.ssyx.vo.user.LeaderAddressVo;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 import org.mapstruct.factory.Mappers;
 
 /**
@@ -24,16 +22,8 @@ public interface LeaderConverterMapper {
     /**
      * 获取leader模型
      *
-     * @param ob
-     * @return
+     * @param leader 团长
+     * @return 团长模型
      */
-    @Mappings({
-            @Mapping(target = "skuId", source = "id"),
-            @Mapping(target = "skuName", source = "skuName"),
-            @Mapping(target = "price", source = "price"),
-            @Mapping(target = "marketPrice", source = "marketPrice"),
-            @Mapping(target = "stock", source = "stock"),
-            @Mapping(target = "sales", source = "sale"),
-    })
     LeaderAddressVo converterLeaderToLeaderVO(Leader leader);
 }

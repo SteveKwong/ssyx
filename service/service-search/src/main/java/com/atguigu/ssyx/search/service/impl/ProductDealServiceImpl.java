@@ -2,6 +2,7 @@ package com.atguigu.ssyx.search.service.impl;
 
 import com.atguigu.ssyx.search.remoteinvo.ProductService;
 import com.atguigu.ssyx.search.vo.SkuInfoVO;
+import com.atguigu.ssyx.vo.search.SkuEsQueryVo;
 import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
 import io.jsonwebtoken.lang.Assert;
@@ -183,4 +184,19 @@ public class ProductDealServiceImpl {
         return builder;
     }
 
+    /**
+     * 步骤:1.通过库存id和categoryId 进行商品sku的查询
+     *
+     * @param start
+     * @param limit
+     * @param skuEsQueryVo
+     */
+    public void findSkuByCategory(Long start, Long limit, SkuEsQueryVo skuEsQueryVo) {
+        // 把wareid添加到skuesqueryvo中
+
+        // 如果没有keyword关键字的话 根据wareid 和分类id 进行查询
+
+        // 如果有keyword关键字 根据分类id和keyword进行查询。
+
+    }
 }

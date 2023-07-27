@@ -1,11 +1,15 @@
 package com.atguigu.ssyx.product.converter;
 
+import com.atguigu.ssyx.model.product.Category;
 import com.atguigu.ssyx.model.product.SkuInfo;
 import com.atguigu.ssyx.product.remoteinvo.pojo.SkuInfoVO;
+import com.atguigu.ssyx.vo.product.CategoryVo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.factory.Mappers;
+
+import java.util.List;
 
 /**
  * @author kuanggong
@@ -36,4 +40,13 @@ public interface MyMapper {
             @Mapping(target = "sales", source = "sale"),
     })
     SkuInfoVO converterSkuInfoToSkuInfoVO(SkuInfo skuInfo);
+
+    /**
+     * 商品分类列表转为VO对象
+     *
+     * @param categories 分类列表DO
+     * @return 分类结果
+     */
+    List<CategoryVo> converterCategoryToCategoryVO(List<Category> categories);
+
 }

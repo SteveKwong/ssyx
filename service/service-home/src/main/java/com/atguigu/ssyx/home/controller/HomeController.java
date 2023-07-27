@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -32,7 +32,7 @@ public class HomeController {
     @ApiOperation("展示首页数据")
     @GetMapping("/getuserinfobyuserid")
     public Result showHome() {
-        HashMap<String, Object> homeData = homeService.showHome();
+        Map<Object, Object> homeData = homeService.showHome();
         return Result.ok(homeData);
     }
 }
