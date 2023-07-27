@@ -42,4 +42,11 @@ public interface UserService extends IService<User> {
      * @return
      */
     Result getHashMapResult(String code);
+
+    /**
+     * 通过用户的userId 获取团长的收货地址
+     * @param userId
+     * @return
+     */
+    LeaderAddressVo showAddress(Long userId);
 }

@@ -11,6 +11,7 @@ import com.atguigu.ssyx.enums.UserType;
 import com.atguigu.ssyx.enums.user.Leader;
 import com.atguigu.ssyx.enums.user.User;
 import com.atguigu.ssyx.enums.user.UserDelivery;
+import com.atguigu.ssyx.user.converter.LeaderConverterMapper;
 import com.atguigu.ssyx.user.mapper.LeaderMapper;
 import com.atguigu.ssyx.user.mapper.UserDeliveryMapper;
 import com.atguigu.ssyx.user.mapper.UserMapper;
@@ -46,6 +47,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private LeaderMapper leaderMapper;
     @Autowired
     private RedisTemplate redisTemplate;
+
     /**
      * 通过openId获取user
      *
@@ -189,5 +191,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         map.put("token", token);
         map.put("leaderAddressVo", leaderAddressVo);
         return Result.ok(map);
+    }
+
+    /**
+     * 通过用户id展示地址
+     *
+     * @param userId 用户的id
+     * @return 地址信息
+     */
+    @Override
+    public LeaderAddressVo showAddress(Long userId) {
+        Leader leader = baseMapper.showAddress(userId);
+        LeaderAddressVo leaderAddressVo = LeaderConverterMapper.INSTANCE.converterLeaderToLeaderVO(leader);
+        return leaderAddressVo;
     }
 }
