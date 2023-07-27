@@ -1,8 +1,8 @@
 package com.atguigu.ssyx.user.service.impl;
 
-import com.atguigu.ssyx.sys.entity.Leader;
-import com.atguigu.ssyx.sys.mapper.LeaderMapper;
-import com.atguigu.ssyx.sys.service.LeaderService;
+import com.atguigu.ssyx.enums.user.Leader;
+import com.atguigu.ssyx.user.mapper.LeaderMapper;
+import com.atguigu.ssyx.user.service.LeaderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 

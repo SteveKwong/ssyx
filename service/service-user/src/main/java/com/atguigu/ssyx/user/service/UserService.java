@@ -1,5 +1,6 @@
 package com.atguigu.ssyx.user.service;
 
+import com.atguigu.ssyx.common.result.Result;
 import com.atguigu.ssyx.enums.user.User;
 import com.atguigu.ssyx.vo.user.LeaderAddressVo;
 import com.atguigu.ssyx.vo.user.UserLoginVo;
@@ -34,4 +35,11 @@ public interface UserService extends IService<User> {
      * @return userVO
      */
     UserLoginVo getUserLoginVo(Long id);
+
+    /**
+     * 登录
+     * @param code
+     * @return
+     */
+    Result getHashMapResult(String code);
 }

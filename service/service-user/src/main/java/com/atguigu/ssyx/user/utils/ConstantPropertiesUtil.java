@@ -20,7 +20,7 @@ public class ConstantPropertiesUtil implements InitializingBean {
     public static String WX_OPEN_APP_SECRET;
 
     @Override
-    public void afterPropertiesSet() {
+    public void afterPropertiesSet() throws Exception {
         WX_OPEN_APP_ID = appId;
         WX_OPEN_APP_SECRET = appSecret;
     }

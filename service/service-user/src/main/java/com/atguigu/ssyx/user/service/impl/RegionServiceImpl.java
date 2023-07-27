@@ -1,6 +1,7 @@
 package com.atguigu.ssyx.user.service.impl;
 
 
+import com.atguigu.ssyx.model.sys.Region;
 import com.atguigu.ssyx.user.mapper.RegionMapper;
 import com.atguigu.ssyx.user.service.RegionService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

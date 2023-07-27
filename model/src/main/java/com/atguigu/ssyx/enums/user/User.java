@@ -1,6 +1,5 @@
 package com.atguigu.ssyx.enums.user;
 
-import com.atguigu.ssyx.enums.UserType;
 import com.atguigu.ssyx.model.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -16,7 +15,7 @@ public class User extends BaseEntity {
 	private static final long serialVersionUID = 1L;
 
 	@TableField("user_type")
-	private UserType userType;
+	private Integer userType;
 
 	@ApiModelProperty(value = "会员头像")
 	@TableField("photo_url")
