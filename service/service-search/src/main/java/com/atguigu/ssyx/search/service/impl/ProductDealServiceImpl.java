@@ -187,9 +187,9 @@ public class ProductDealServiceImpl {
     /**
      * 步骤:1.通过库存id和categoryId 进行商品sku的查询
      *
-     * @param start
-     * @param limit
-     * @param skuEsQueryVo
+     * @param start        起始页
+     * @param limit        限制
+     * @param skuEsQueryVo 查询条件
      */
     public void findSkuByCategory(Long start, Long limit, SkuEsQueryVo skuEsQueryVo) {
         // 把wareid添加到skuesqueryvo中
