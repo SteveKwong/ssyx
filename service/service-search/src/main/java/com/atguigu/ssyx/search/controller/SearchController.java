@@ -29,7 +29,7 @@ public class SearchController {
                                     @PathVariable Long limit,
                                     SkuEsQueryVo skuEsQueryVo
     ) {
-        productDealService.findSkuByCategory(start,limit,skuEsQueryVo);
+//        productDealService.findSkuByCategory(start,limit,skuEsQueryVo);
         return Result.ok("");
     }
 }

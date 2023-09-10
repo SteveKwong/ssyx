@@ -1,33 +1,9 @@
 package com.atguigu.ssyx.search.service.impl;
 
-import com.atguigu.ssyx.search.remoteinvo.ProductService;
-import com.atguigu.ssyx.search.vo.SkuInfoVO;
-import com.atguigu.ssyx.vo.search.SkuEsQueryVo;
-import com.google.gson.Gson;
-import com.rabbitmq.client.Channel;
-import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.client.IndicesClient;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.GetIndexRequest;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-
-import static com.atguigu.ssyx.search.config.RabbitMQConfig.*;
 
 /**
  * @author kuanggong
@@ -37,34 +13,34 @@ import static com.atguigu.ssyx.search.config.RabbitMQConfig.*;
 @Service
 @Slf4j
 public class ProductDealServiceImpl {
-    /**
+  /*  *//**
      * 索引库客户端
-     */
-    @Qualifier("esClient")
-    @Autowired
-    private RestHighLevelClient client;
-    /**
+     *//*
+//    @Qualifier("esClient")
+//    @Autowired
+//    private RestHighLevelClient client;
+    *//**
      * 商品远程服务
-     */
+     *//*
     @Autowired
     private ProductService productService;
-    /**
+    *//**
      * json序列化工具
-     */
+     *//*
     @Autowired
     private Gson gson;
-    /**
+    *//**
      * ssyx的索引列
-     */
+     *//*
     public static final String PRODUCT_INDEX = "ssyx_product";
 
-    /**
+    *//**
      * 上架商品信息
      *
      * @param message 消息
      * @param channel 队列
      * @throws Exception 可能出现的异常
-     */
+     *//*
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = SEARCH_ADD_QUEUE, durable = "true"),
             exchange = @Exchange(value = GOODS_UP_EXCHANGE),
@@ -89,11 +65,11 @@ public class ProductDealServiceImpl {
         }
     }
 
-    /**
+    *//**
      * 进行商品的上架
      *
      * @param infoVO 单个商品的sku的信息集合
-     */
+     *//*
     private boolean productStatusUp(SkuInfoVO infoVO) throws Exception {
         //创建批量请求
         boolean exists = indexExists(PRODUCT_INDEX);
@@ -118,12 +94,12 @@ public class ProductDealServiceImpl {
         return true;
     }
 
-    /**
+    *//**
      * 插入到索引库
      *
      * @param infoVO 信息
      * @throws IOException 异常
-     */
+     *//*
     private void insertIntoIndex(SkuInfoVO infoVO) throws IOException {
         IndexRequest indexRequest = new IndexRequest(PRODUCT_INDEX);
         indexRequest.id(infoVO.getSkuId());
@@ -132,9 +108,9 @@ public class ProductDealServiceImpl {
         System.out.println("Index created with status: " + indexResponse.status());
     }
 
-    /**
+    *//**
      * 判断索引库是否存在
-     */
+     *//*
     public boolean indexExists(String indexName) throws Exception {
         IndicesClient indicesClient = client.indices();
         // 创建get请求
@@ -145,13 +121,13 @@ public class ProductDealServiceImpl {
     }
 
 
-    /**
+    *//**
      * 下架商品信息
      *
      * @param message 消息
      * @param channel 队列
      * @throws Exception 可能出现的异常
-     */
+     *//*
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = SEARCH_DEL_QUEUE, durable = "true"),
             exchange = @Exchange(value = GOODS_DOWN_EXCHANGE),
@@ -161,13 +137,13 @@ public class ProductDealServiceImpl {
 
     }
 
-    /**
+    *//**
      * 创建索引库字段实体
      *
      * @param skuInfoVO s
      * @return s
      * @throws IOException y
-     */
+     *//*
     private XContentBuilder buildJSONFromEntity(SkuInfoVO skuInfoVO) throws IOException {
         XContentBuilder builder = XContentFactory.jsonBuilder();
         builder.startObject();
@@ -184,13 +160,13 @@ public class ProductDealServiceImpl {
         return builder;
     }
 
-    /**
+    *//**
      * 步骤:1.通过库存id和categoryId 进行商品sku的查询
      *
      * @param start        起始页
      * @param limit        限制
      * @param skuEsQueryVo 查询条件
-     */
+     *//*
     public void findSkuByCategory(Long start, Long limit, SkuEsQueryVo skuEsQueryVo) {
         // 把wareid添加到skuesqueryvo中
 
@@ -198,5 +174,5 @@ public class ProductDealServiceImpl {
 
         // 如果有keyword关键字 根据分类id和keyword进行查询。
 
-    }
+    }*/
 }

@@ -1,11 +1,7 @@
 package com.atguigu.ssyx.product.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-
-import javax.annotation.PostConstruct;
 
 /**
  * @author kuanggong
@@ -15,7 +11,7 @@ import javax.annotation.PostConstruct;
 @Configuration
 @Slf4j
 public class RabbitCallbackConfig {
-    @Autowired
+ /*   @Autowired
     private RabbitTemplate rabbitTemplate;
 
 
@@ -35,7 +31,7 @@ public class RabbitCallbackConfig {
             System.out.println("交换机：" + exchange);
             System.out.println("路由键：" + routingKey);
         });
-    }
+    }*/
 
 
 }

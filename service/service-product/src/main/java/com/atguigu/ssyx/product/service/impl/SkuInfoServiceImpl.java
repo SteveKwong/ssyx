@@ -22,18 +22,18 @@ import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.amqp.rabbit.connection.CorrelationData;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.messaging.Source;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.atguigu.ssyx.product.config.RabbitMQConfig.*;
 import static com.atguigu.ssyx.product.enums.GoodsStatus.GOODS_DOWN;
 import static com.atguigu.ssyx.product.enums.GoodsStatus.GOODS_UP;
 
@@ -48,6 +48,7 @@ import static com.atguigu.ssyx.product.enums.GoodsStatus.GOODS_UP;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@EnableBinding(Source.class)
 public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> implements SkuInfoService {
     /**
      * sku海报的服务
@@ -61,10 +62,13 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
      * sku的属性的服务
      */
     private final SkuAttrValueService skuAttrValueService;
+
+    //   private final RabbitTemplate rabbitTemplate;
     /**
      * 消息队列
      */
-    private final RabbitTemplate rabbitTemplate;
+    @Autowired
+    private Source source;
 
 
     /**
@@ -218,11 +222,14 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
     public void goodsUp(Long id) {
         // 判断是否已上架
         SkuInfo skuInfo = baseMapper.selectById(id);
-        Assert.notNull(skuInfo,"没有找到该商品");
-        Assert.isTrue(!GOODS_UP.getCode().equals(skuInfo.getPublishStatus()),"商品已经上架");
+        Assert.notNull(skuInfo, "没有找到该商品");
+        Assert.isTrue(!GOODS_UP.getCode().equals(skuInfo.getPublishStatus()), "商品已经上架");
+
+/*        rabbitTemplate.convertAndSend(GOODS_UP_EXCHANGE, SEARCH_ADD_QUEUE, id,
+                new CorrelationData(UUID.randomUUID().toString()));*/
         // 发送到索引库处理逻辑
-        rabbitTemplate.convertAndSend(GOODS_UP_EXCHANGE, SEARCH_ADD_QUEUE, id,
-                new CorrelationData(UUID.randomUUID().toString()));
+        source.output().send(MessageBuilder.withPayload(id).build());
+        log.info("发送商品上架,id为{}",id);
         // 修改数据库状态为上架
         LambdaUpdateWrapper<SkuInfo> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(SkuInfo::getId, id);
@@ -241,8 +248,10 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         // 商品的上架中直接商品状态改成上架,然后同步到索引库当中
         // 在这个方法中,需要先发送MQ到索引库服务 如果回调为真 则修改数据库状态为上架
         // 3.添加callback
-        CorrelationData correlationData = new CorrelationData(UUID.randomUUID().toString());
-        rabbitTemplate.convertAndSend(GOODS_DOWN_EXCHANGE, SEARCH_DEL_QUEUE, id, correlationData);
+//        CorrelationData correlationData = new CorrelationData(UUID.randomUUID().toString());
+//        rabbitTemplate.convertAndSend(GOODS_DOWN_EXCHANGE, SEARCH_DEL_QUEUE, id, correlationData);
+        source.output().send(MessageBuilder.withPayload(id).build());
+        log.info("发送商品下架,id为{}",id);
         LambdaUpdateWrapper<SkuInfo> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(SkuInfo::getId, id);
         updateWrapper.set(SkuInfo::getPublishStatus, GOODS_DOWN);

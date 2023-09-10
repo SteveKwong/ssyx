@@ -27,15 +27,28 @@
 #  jackson:
 #    date-format: yyyy-MM-dd HH:mm:ss
 #    time-zone: GMT+8
-#  rabbitmq:
-#    host: 127.0.0.1
-#    port: 5672
-#    username: guest
-#    password: guest
-#    virtual-host: /
-##    开启生产者的确认机制 异步回调 定义一个confirmCallBack MQ返回结果时会回调这个callBack
-#    publisher-confirm-type: correlated
-##    消息未被收到会返回
-#    publisher-returns: true
-#    template:
-#      mandatory: true
+##  rabbitmq:
+##    host: 127.0.0.1
+##    port: 5672
+##    username: guest
+##    password: guest
+##    virtual-host: /
+###    开启生产者的确认机制 异步回调 定义一个confirmCallBack MQ返回结果时会回调这个callBack
+##    publisher-confirm-type: correlated
+###    消息未被收到会返回
+##    publisher-returns: true
+##    template:
+##      mandatory: true
+#  cloud:
+#    stream:
+#      bindings:
+#        input:
+#          destination: shopping
+#          content-type: application/json
+#          group: myGroup
+#        output:
+#          destination: shopping
+#          content-type: application/json
+#      kafka:
+#        binder:
+#          brokers: localhost:9092
